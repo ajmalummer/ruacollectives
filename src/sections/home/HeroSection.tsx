@@ -37,30 +37,14 @@ export default function HeroSection() {
   return (
     <section className="w-full bg-white">
 
-      {/* ── Text block ──
-          pt-16  = clear the fixed 64px header
-          Extra vertical padding scales with screen size for breathing room
-      */}
-      <div className="mx-auto max-w-4xl px-5 sm:px-8 lg:px-12 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-10 lg:pb-12 text-center">
-        <h1
-          className="font-playfair italic text-foreground leading-[1.25] tracking-tight"
-          style={{ fontSize: 'clamp(1.6rem, 4vw + 0.5rem, 3.5rem)' }}
-        >
-          Aysha Ummer from Kannur, Kerala building{' '}
-          <em className="font-playfair not-italic font-semibold">RUA Collectives</em>{' '}
-          with a vision to make luxury affordable for more people, more often.
-        </h1>
-      </div>
-
-      {/* ── Carousel block ── */}
-      <div className="flex justify-center px-4 sm:px-6 pb-12 sm:pb-16 lg:pb-20">
+      {/* ── Carousel block (TOP) ── */}
+      <div className="flex justify-center px-4 sm:px-6 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-10">
         <div
           className="relative overflow-hidden w-full sm:w-[85%] lg:w-[80%]"
           style={{ borderRadius: '2.5rem' }}
         >
           {images.length > 0 ? (
             <>
-              {/* Slides */}
               <div
                 className="relative w-full"
                 style={{ height: 'clamp(260px, 48vw, 640px)' }}
@@ -107,7 +91,6 @@ export default function HeroSection() {
               </div>
             </>
           ) : (
-            /* Placeholder when no images uploaded yet */
             <div
               className="w-full flex items-center justify-center bg-gray-100 text-gray-400 font-inter text-sm px-6 text-center"
               style={{ height: 'clamp(260px, 48vw, 640px)' }}
@@ -117,6 +100,19 @@ export default function HeroSection() {
           )}
         </div>
       </div>
+
+      {/* ── Text block (BOTTOM) ── */}
+      <div className="mx-auto max-w-[1500px] px-5 sm:px-10 lg:px-16 xl:px-24 2xl:px-32 pt-6 sm:pt-8 pb-12 sm:pb-16 lg:pb-20 text-center">
+        <h1
+          className="font-playfair italic text-foreground leading-[1.25] tracking-tight"
+          style={{ fontSize: 'clamp(1.5rem, 4.5vw, 5rem)' }}
+        >
+          Aysha Ummer from Kannur, Kerala building{' '}
+          <em className="font-playfair not-italic font-semibold">RUA Collectives</em>{' '}
+          with a vision to make luxury affordable for more people, more often.
+        </h1>
+      </div>
+
     </section>
   );
 }
