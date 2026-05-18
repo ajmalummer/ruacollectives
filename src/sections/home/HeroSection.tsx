@@ -37,10 +37,10 @@ export default function HeroSection() {
   return (
     <section className="w-full bg-white">
       {/* ── Text block ── */}
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 pt-12 pb-10 text-center">
-        <h1 className="font-playfair italic text-3xl sm:text-4xl lg:text-5xl text-foreground leading-snug mb-4">
-          Two young entrepreneurs from Kannur, Kerala building{' '}
-          <em className="font-playfair">RUA</em> with a vision to make
+      <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-16 pt-14 pb-12 text-center">
+        <h1 className="font-playfair italic text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-foreground leading-snug">
+          Aysha Ummer from Kannur, Kerala building{' '}
+          <em className="font-playfair">RUA Collectives</em> with a vision to make
           luxury affordable for more people, more often.
         </h1>
       </div>
