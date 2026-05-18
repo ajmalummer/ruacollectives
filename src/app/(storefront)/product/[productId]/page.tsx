@@ -134,6 +134,7 @@ export default function ProductPage() {
                   title={p.title}
                   price={p.price}
                   image={p.image_url}
+                  stock={p.stock}
                 />
               ))}
             </div>

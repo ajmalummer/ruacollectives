@@ -39,6 +39,7 @@ export default function BestSellersSection() {
                 title={product.title}
                 price={product.price}
                 image={product.image_url}
+                stock={product.stock}
               />
             ))
           ) : (

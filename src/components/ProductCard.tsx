@@ -9,10 +9,14 @@ interface ProductCardProps {
   title: string;
   price: number;
   image: string;
+  stock?: number | null;
 }
 
-export default function ProductCard({ id, title, price, image }: ProductCardProps) {
+export default function ProductCard({ id, title, price, image, stock }: ProductCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+
+  const isOutOfStock = stock === 0;
+  const isLowStock = stock === 1;
 
   return (
     <Link href={`/product/${id}`} className="group cursor-pointer flex flex-col block">
@@ -25,6 +29,18 @@ export default function ProductCard({ id, title, price, image }: ProductCardProp
           className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-20" />
+
+        {/* Stock badges */}
+        {isOutOfStock && (
+          <div className="absolute top-2 left-2 z-30 bg-gray-800 text-white text-[10px] font-inter font-semibold px-2.5 py-1 rounded-full tracking-wide uppercase">
+            Out of Stock
+          </div>
+        )}
+        {isLowStock && (
+          <div className="absolute top-2 left-2 z-30 bg-amber-500 text-white text-[10px] font-inter font-semibold px-2.5 py-1 rounded-full tracking-wide uppercase">
+            Only 1 left!
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col flex-1">
@@ -36,10 +52,15 @@ export default function ProductCard({ id, title, price, image }: ProductCardProp
             e.preventDefault();
             // Handle add to cart here later
           }}
-          className="mt-auto w-full bg-cherry text-foreground font-inter text-xs font-medium py-2.5 px-4 rounded-full transition-colors duration-200 hover:opacity-90 flex items-center justify-center gap-2"
+          disabled={isOutOfStock}
+          className={`mt-auto w-full font-inter text-xs font-medium py-2.5 px-4 rounded-full transition-colors duration-200 flex items-center justify-center gap-2 ${
+            isOutOfStock
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-cherry text-foreground hover:opacity-90'
+          }`}
         >
           <ShoppingBag className="w-3.5 h-3.5" />
-          Add to Cart
+          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </button>
       </div>
     </Link>

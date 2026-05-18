@@ -97,6 +97,7 @@ export default function CategoryPage() {
                 title={product.title}
                 price={product.price}
                 image={product.image_url}
+                stock={product.stock}
               />
             ))}
           </div>

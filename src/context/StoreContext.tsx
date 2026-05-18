@@ -17,6 +17,7 @@ export interface Product {
   image_url: string;
   category_id: string;
   display_order: number;
+  stock: number | null;
 }
 
 export interface HeroImage {
