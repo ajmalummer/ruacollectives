@@ -16,7 +16,7 @@ export default function AdminReportsPage() {
     const catProducts = products.filter(p => p.category_id === cat.id);
     const prices = catProducts.map(p => p.price);
     const stocks = catProducts.map(p => p.stock);
-    const totalCatStock = stocks.reduce((s, v) => s + (v ?? 0), 0);
+    const totalCatStock = stocks.reduce((s: number, v) => s + (v ?? 0), 0);
     const unlimitedCount = stocks.filter(v => v === null).length;
     const avgPrice = prices.length ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
     const minPrice = prices.length ? Math.min(...prices) : 0;
