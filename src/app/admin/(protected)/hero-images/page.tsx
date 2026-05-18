@@ -55,10 +55,11 @@ function SortableImageCard({
         isDragging ? 'shadow-xl ring-2 ring-cherry/30' : ''
       }`}
     >
-      {/* Drag handle */}
+      {/* Drag handle — always visible on touch, hover-only on desktop */}
       <button
         type="button"
-        className="absolute top-2 left-2 p-1.5 bg-black/50 rounded-lg text-white cursor-grab active:cursor-grabbing z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 left-2 p-1.5 bg-black/50 rounded-lg text-white cursor-grab active:cursor-grabbing z-10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+        style={{ touchAction: 'none' }}
         {...attributes}
         {...listeners}
         aria-label="Drag to reorder"
@@ -107,10 +108,10 @@ export default function AdminHeroImagesPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 8 },
+      activationConstraint: { delay: 200, tolerance: 5 },
     }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );

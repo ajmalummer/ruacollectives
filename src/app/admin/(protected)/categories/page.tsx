@@ -17,7 +17,13 @@ function SortableCategoryRow({ category, onEdit, onDelete }: { category: any, on
   return (
     <tr ref={setNodeRef} style={style} className={`bg-white ${isDragging ? 'shadow-lg border border-cherry/20 z-10' : ''}`}>
       <td className="px-6 py-4 w-10">
-        <button type="button" className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing" {...attributes} {...listeners}>
+        <button
+          type="button"
+          className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing touch-none"
+          style={{ touchAction: 'none' }}
+          {...attributes}
+          {...listeners}
+        >
           <GripVertical className="w-5 h-5" />
         </button>
       </td>
@@ -49,10 +55,10 @@ export default function AdminCategoriesPage() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 8 },
+      activationConstraint: { delay: 200, tolerance: 5 },
     }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
