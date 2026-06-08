@@ -40,6 +40,9 @@ export default function BestSellersSection() {
                 price={product.price}
                 image={product.image_url}
                 stock={product.stock}
+                offerEnabled={product.offer_enabled}
+                offerPrice={product.offer_price}
+                isAntiTarnish={product.is_anti_tarnish}
               />
             ))
           ) : (

@@ -10,13 +10,20 @@ interface ProductCardProps {
   price: number;
   image: string;
   stock?: number | null;
+  offerEnabled?: boolean;
+  offerPrice?: number | null;
+  isAntiTarnish?: boolean;
 }
 
-export default function ProductCard({ id, title, price, image, stock }: ProductCardProps) {
+export default function ProductCard({ id, title, price, image, stock, offerEnabled, offerPrice, isAntiTarnish }: ProductCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const isOutOfStock = stock === 0;
   const isLowStock = stock === 1;
+  const showOffer = offerEnabled && offerPrice != null && offerPrice < price;
+
+  // Discount percentage
+  const discountPct = showOffer ? Math.round(((price - offerPrice!) / price) * 100) : 0;
 
   return (
     <Link href={`/product/${id}`} className="group cursor-pointer flex flex-col block">
@@ -30,22 +37,43 @@ export default function ProductCard({ id, title, price, image, stock }: ProductC
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 z-20" />
 
-        {/* Stock badges */}
+        {/* Badges */}
         {isOutOfStock && (
           <div className="absolute top-2 left-2 z-30 bg-gray-800 text-white text-[10px] font-inter font-semibold px-2.5 py-1 rounded-full tracking-wide uppercase">
             Out of Stock
           </div>
         )}
-        {isLowStock && (
+        {!isOutOfStock && isLowStock && (
           <div className="absolute top-2 left-2 z-30 bg-amber-500 text-white text-[10px] font-inter font-semibold px-2.5 py-1 rounded-full tracking-wide uppercase">
             Only 1 left!
+          </div>
+        )}
+        {!isOutOfStock && showOffer && (
+          <div className="absolute top-2 right-2 z-30 font-inter font-bold px-2.5 py-1 rounded-full text-[11px] text-white" style={{ backgroundColor: '#C0392B' }}>
+            -{discountPct}%
           </div>
         )}
       </div>
 
       <div className="flex flex-col flex-1">
-        <h3 className="font-inter text-sm text-gray-900 mb-1 truncate">{title}</h3>
-        <p className="font-inter font-semibold text-foreground mb-3">Rs. {price.toFixed(2)}</p>
+        <div className="mb-1 flex items-start justify-between gap-2">
+          <h3 className="font-inter text-sm text-gray-900 truncate">{title}</h3>
+          {isAntiTarnish && (
+            <span className="flex-shrink-0 text-[10px] font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-sm whitespace-nowrap">
+              Anti-tarnish
+            </span>
+          )}
+        </div>
+
+        {/* Price display */}
+        {showOffer ? (
+          <div className="flex items-baseline gap-2 mb-3">
+            <p className="font-inter font-bold" style={{ color: '#C0392B' }}>Rs. {offerPrice!.toFixed(2)}</p>
+            <p className="font-inter text-xs text-gray-500 line-through">Rs. {price.toFixed(2)}</p>
+          </div>
+        ) : (
+          <p className="font-inter font-semibold text-foreground mb-3">Rs. {price.toFixed(2)}</p>
+        )}
 
         <button
           onClick={(e) => {

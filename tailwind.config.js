@@ -10,6 +10,11 @@ module.exports = {
           DEFAULT: '#e1d4c2',
           light: '#d1c4b2',
         },
+        offer: {
+          DEFAULT: '#C0392B',
+          light: '#fdf2f2',
+          badge: '#E74C3C',
+        },
         offwhite: '#a78d78',
         gold: '#C9A96E',
         border: "hsl(var(--border))",

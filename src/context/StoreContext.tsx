@@ -14,8 +14,14 @@ export interface Product {
   id: string;
   title: string;
   price: number;
+  offer_enabled: boolean;
+  offer_price: number | null;
+  description_enabled: boolean;
+  description: string | null;
+  is_anti_tarnish: boolean;
   image_url: string;
-  category_id: string;
+  additional_images: string[];
+  category_ids: string[];
   display_order: number;
   stock: number | null;
 }
