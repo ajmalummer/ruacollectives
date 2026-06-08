@@ -13,7 +13,7 @@ export default function CategoryPage() {
   const [sortBy] = useState('featured');
 
   const category = categories.find((c) => c.id === categoryId);
-  const categoryProducts = products.filter((p) => p.category_id === categoryId);
+  const categoryProducts = products.filter((p) => p.category_ids?.includes(categoryId));
 
   const sortedProducts = [...categoryProducts].sort((a, b) => {
     if (sortBy === 'price-low') return a.price - b.price;

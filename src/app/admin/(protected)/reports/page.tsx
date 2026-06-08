@@ -13,7 +13,7 @@ export default function AdminReportsPage() {
 
   // Category breakdown
   const categoryStats = categories.map(cat => {
-    const catProducts = products.filter(p => p.category_id === cat.id);
+    const catProducts = products.filter(p => p.category_ids?.includes(cat.id));
     const prices = catProducts.map(p => p.price);
     const stocks = catProducts.map(p => p.stock);
     const totalCatStock = stocks.reduce((s: number, v) => s + (v ?? 0), 0);
@@ -112,14 +112,17 @@ export default function AdminReportsPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {alertProducts.map(p => {
-                  const cat = categories.find(c => c.id === p.category_id);
+                  const catNames = (p.category_ids || [])
+                    .map(id => categories.find(c => c.id === id)?.title)
+                    .filter(Boolean)
+                    .join(', ');
                   return (
                     <tr key={p.id} className="bg-white">
                       <td className="px-6 py-3 flex items-center gap-3">
                         <img src={p.image_url} alt={p.title} className="w-9 h-9 rounded object-cover" />
                         <span className="font-medium text-sm text-gray-800">{p.title}</span>
                       </td>
-                      <td className="px-6 py-3 text-sm text-gray-500">{cat?.title ?? '—'}</td>
+                      <td className="px-6 py-3 text-sm text-gray-500">{catNames || '—'}</td>
                       <td className="px-6 py-3 text-sm text-gray-700">Rs. {p.price.toFixed(2)}</td>
                       <td className="px-6 py-3">
                         {p.stock === 0 ? (
@@ -233,7 +236,10 @@ export default function AdminReportsPage() {
                 </tr>
               )}
               {products.map(p => {
-                const cat = categories.find(c => c.id === p.category_id);
+                const catNames = (p.category_ids || [])
+                  .map(id => categories.find(c => c.id === id)?.title)
+                  .filter(Boolean)
+                  .join(', ');
                 const stockLabel =
                   p.stock === null || p.stock === undefined
                     ? <span className="text-xs text-gray-400">Unlimited</span>
@@ -248,7 +254,7 @@ export default function AdminReportsPage() {
                       <img src={p.image_url} alt={p.title} className="w-9 h-9 rounded object-cover" />
                       <span className="font-medium text-sm text-gray-800">{p.title}</span>
                     </td>
-                    <td className="px-6 py-3 text-sm text-gray-500">{cat?.title ?? '—'}</td>
+                    <td className="px-6 py-3 text-sm text-gray-500">{catNames || '—'}</td>
                     <td className="px-6 py-3 text-sm text-gray-700">Rs. {p.price.toFixed(2)}</td>
                     <td className="px-6 py-3">{stockLabel}</td>
                   </tr>

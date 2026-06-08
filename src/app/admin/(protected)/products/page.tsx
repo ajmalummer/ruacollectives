@@ -468,6 +468,41 @@ function AntiTarnishSection({ enabled, onToggle }: AntiTarnishSectionProps) {
   );
 }
 
+// ─── Multi-Category Select ───────────────────────────────────────────────────
+interface MultiCategorySelectProps {
+  categories: any[];
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+}
+function MultiCategorySelect({ categories, selectedIds, onChange }: MultiCategorySelectProps) {
+  const toggle = (id: string) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter(i => i !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+  return (
+    <div className="flex flex-wrap gap-2">
+      {categories.map(c => {
+        const active = selectedIds.includes(c.id);
+        return (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => toggle(c.id)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${
+              active ? 'bg-cherry text-white border-cherry shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            {c.title}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 interface EditModalProps {
   product: any;
@@ -478,7 +513,7 @@ interface EditModalProps {
 function EditModal({ product, categories, onClose, onSaved }: EditModalProps) {
   const [title, setTitle] = useState(product.title);
   const [price, setPrice] = useState(product.price.toString());
-  const [categoryId, setCategoryId] = useState(product.category_id);
+  const [categoryIds, setCategoryIds] = useState<string[]>(product.category_ids || []);
   const [stock, setStock] = useState(
     product.stock !== null && product.stock !== undefined ? product.stock.toString() : ''
   );
@@ -533,7 +568,7 @@ function EditModal({ product, categories, onClose, onSaved }: EditModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price || !categoryId) return toast.error('Please fill required fields');
+    if (!title || !price || categoryIds.length === 0) return toast.error('Please fill required fields and select at least one category');
 
     setIsUploading(true);
     const toastId = toast.loading('Updating product...');
@@ -561,7 +596,7 @@ function EditModal({ product, categories, onClose, onSaved }: EditModalProps) {
       const updateData: any = {
         title,
         price: parseFloat(price),
-        category_id: categoryId,
+        category_ids: categoryIds,
         stock: stockValue,
         additional_images: additionalUrls,
         offer_enabled: offerEnabled,
@@ -632,15 +667,15 @@ function EditModal({ product, categories, onClose, onSaved }: EditModalProps) {
                 <input required type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-cherry text-sm" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select required value={categoryId} onChange={e => setCategoryId(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-cherry bg-white text-sm">
-                  <option value="" disabled>Select category...</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                </select>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+                <MultiCategorySelect
+                  categories={categories}
+                  selectedIds={categoryIds}
+                  onChange={setCategoryIds}
+                />
               </div>
-              <div>
+              <div className="sm:col-span-3">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Stock <span className="text-gray-400 font-normal">(blank = unlimited)</span>
                 </label>
@@ -718,7 +753,7 @@ export default function AdminProductsPage() {
   // Add-form state
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
-  const [categoryId, setCategoryId] = useState('');
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [stock, setStock] = useState('');
   const [offerEnabled, setOfferEnabled] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
@@ -755,7 +790,7 @@ export default function AdminProductsPage() {
   );
 
   const resetAddForm = () => {
-    setTitle(''); setPrice(''); setCategoryId(''); setStock('');
+    setTitle(''); setPrice(''); setCategoryIds([]); setStock('');
     setOfferEnabled(false); setOfferPrice('');
     setDescEnabled(false); setDescription('');
     setIsAntiTarnish(false);
@@ -773,7 +808,7 @@ export default function AdminProductsPage() {
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !price || !categoryId) return toast.error('Please fill required fields');
+    if (!title || !price || categoryIds.length === 0) return toast.error('Please fill required fields and select at least one category');
     if (!primaryFile) return toast.error('Please select a primary image');
 
     setIsAdding(true);
@@ -794,7 +829,7 @@ export default function AdminProductsPage() {
       const stockValue = stock.trim() === '' ? null : parseInt(stock, 10);
       const offerPriceValue = offerEnabled && offerPrice.trim() !== '' ? parseFloat(offerPrice) : null;
       const { error: dbError } = await supabase.from('products').insert({
-        title, price: parseFloat(price), category_id: categoryId,
+        title, price: parseFloat(price), category_ids: categoryIds,
         display_order: localProducts.length,
         image_url: imageUrl, additional_images: additionalUrls, stock: stockValue,
         offer_enabled: offerEnabled, offer_price: offerPriceValue,
@@ -829,7 +864,13 @@ export default function AdminProductsPage() {
     }
   };
 
-  const getCategoryName = (id: string) => categories.find(c => c.id === id)?.title || 'Unknown';
+  const getCategoryNames = (ids: string[]) => {
+    if (!ids || ids.length === 0) return 'Unknown';
+    return ids
+      .map(id => categories.find(c => c.id === id)?.title)
+      .filter(Boolean)
+      .join(', ');
+  };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -870,15 +911,15 @@ export default function AdminProductsPage() {
               <input required type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-cherry" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select required value={categoryId} onChange={e => setCategoryId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:border-cherry bg-white">
-                <option value="" disabled>Select category...</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-              </select>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Categories</label>
+              <MultiCategorySelect
+                categories={categories}
+                selectedIds={categoryIds}
+                onChange={setCategoryIds}
+              />
             </div>
-            <div>
+            <div className="sm:col-span-3">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Stock <span className="text-gray-400 font-normal">(blank = unlimited)</span>
               </label>
@@ -960,7 +1001,7 @@ export default function AdminProductsPage() {
                     <SortableProductRow
                       key={prod.id}
                       product={prod}
-                      categoryName={getCategoryName(prod.category_id)}
+                      categoryName={getCategoryNames(prod.category_ids)}
                       onEdit={(p: any) => setEditingProduct(p)}
                       onDelete={handleDelete}
                     />
