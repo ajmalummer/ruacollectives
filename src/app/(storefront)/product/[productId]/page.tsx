@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useStore } from '@/context/StoreContext';
+import { toast } from 'react-hot-toast';
 import ProductCard from '@/components/ProductCard';
 import { ShoppingBag, Minus, Plus, Truck, HeadphonesIcon, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ProductPage() {
   const params = useParams();
+  const router = useRouter();
   const productId = params.productId as string;
-  const { products, isLoading } = useStore();
+  const { products, isLoading, addToCart } = useStore();
   const [quantity, setQuantity] = useState(1);
   const [activeIndex, setActiveIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -212,14 +214,26 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              <button className="flex-1 h-12 border border-foreground text-foreground font-inter text-sm font-medium rounded-lg hover:bg-foreground hover:text-white transition-colors flex items-center justify-center gap-2">
+              <button 
+                onClick={() => {
+                  addToCart(product, quantity);
+                  toast.success(`${product.title} added to cart`);
+                }}
+                className="flex-1 h-12 border border-foreground text-foreground font-inter text-sm font-medium rounded-lg hover:bg-foreground hover:text-white transition-colors flex items-center justify-center gap-2"
+              >
                 <ShoppingBag className="w-4 h-4" />
                 Add to cart
               </button>
             </div>
 
             {/* Buy it now */}
-            <button className="w-full h-12 bg-[#111827] text-white font-inter text-sm font-medium rounded-lg hover:opacity-90 transition-opacity mb-10">
+            <button 
+              onClick={() => {
+                addToCart(product, quantity);
+                router.push('/checkout');
+              }}
+              className="w-full h-12 bg-[#111827] text-white font-inter text-sm font-medium rounded-lg hover:opacity-90 transition-opacity mb-10"
+            >
               Buy it now
             </button>
 

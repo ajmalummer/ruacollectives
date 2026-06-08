@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useStore } from '@/context/StoreContext';
-import { LayoutDashboard, Tags, Package, LogOut, Menu, X, Images, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, Tags, Package, LogOut, Menu, X, Images, BarChart2, ShoppingCart, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -14,10 +14,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
     { name: 'Hero Images', path: '/admin/hero-images', icon: Images },
     { name: 'Categories', path: '/admin/categories', icon: Tags },
     { name: 'Products', path: '/admin/products', icon: Package },
     { name: 'Reports', path: '/admin/reports', icon: BarChart2 },
+    { name: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
   useEffect(() => {

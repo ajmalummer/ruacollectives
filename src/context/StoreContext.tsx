@@ -34,6 +34,46 @@ export interface HeroImage {
   created_at: string;
 }
 
+export interface Profile {
+  id: string;
+  full_name: string;
+  mobile: string;
+  whatsapp: string;
+  address: string;
+}
+
+export interface StoreSettings {
+  id: number;
+  whatsapp_number: string;
+  qr_code_url: string;
+}
+
+export interface Order {
+  id: string;
+  user_id: string | null;
+  total_amount: number;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  full_name: string;
+  mobile: string;
+  whatsapp: string;
+  address: string;
+  payment_screenshot_url: string;
+  created_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  quantity: number;
+  price_at_time: number;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 interface StoreContextType {
   categories: Category[];
   products: Product[];
@@ -44,6 +84,17 @@ interface StoreContextType {
   logout: () => void;
   fetchData: () => Promise<void>;
   isLoading: boolean;
+  storeSettings: StoreSettings | null;
+  session: any | null;
+  profile: Profile | null;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
+  cart: CartItem[];
+  addToCart: (product: Product, quantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  cartTotal: number;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -55,8 +106,96 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [signIns, setSignIns] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
+  const [session, setSession] = useState<any | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Initialize Auth
+  // Load Cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('rua_cart');
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Failed to parse cart', e);
+      }
+    }
+  }, []);
+
+  // Save Cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('rua_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  const addToCart = (product: Product, quantity: number) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prev, { product, quantity }];
+    });
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  };
+
+  const updateQuantity = (productId: string, quantity: number) => {
+    setCart((prev) =>
+      prev.map((item) =>
+        item.product.id === productId ? { ...item, quantity } : item
+      )
+    );
+  };
+
+  const clearCart = () => setCart([]);
+
+  const cartTotal = cart.reduce((total, item) => {
+    const price = item.product.offer_enabled && item.product.offer_price != null 
+      ? Number(item.product.offer_price) 
+      : Number(item.product.price);
+    return total + (price * item.quantity);
+  }, 0);
+
+  // Initialize Session Auth
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) fetchProfile(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session?.user) fetchProfile(session.user.id);
+      else setProfile(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (data) setProfile(data);
+  };
+
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // Initialize Admin Auth
   useEffect(() => {
     const auth = localStorage.getItem('adminAuth');
     if (auth === 'true') setIsAuthenticated(true);
@@ -79,17 +218,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [{ data: cats }, { data: prods }, { data: heroes }, { data: signs }] = await Promise.all([
+      const [{ data: cats }, { data: prods }, { data: heroes }, { data: signs }, { data: settings }] = await Promise.all([
         supabase.from('categories').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: true }),
         supabase.from('products').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: false }),
         supabase.from('hero_images').select('*').order('display_order', { ascending: true }).order('created_at', { ascending: true }),
-        supabase.from('sign_ins').select('*').eq('date', new Date().toISOString().split('T')[0]).single()
+        supabase.from('sign_ins').select('*').eq('date', new Date().toISOString().split('T')[0]).single(),
+        supabase.from('store_settings').select('*').eq('id', 1).single()
       ]);
 
       if (cats) setCategories(cats);
       if (prods) setProducts(prods);
       if (heroes) setHeroImages(heroes);
       if (signs) setSignIns(signs.count);
+      if (settings) setStoreSettings(settings);
     } catch (err) {
       console.error('Error fetching data:', err);
     } finally {
@@ -123,7 +264,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <StoreContext.Provider value={{ categories, products, heroImages, signIns, isAuthenticated, login, logout, fetchData, isLoading }}>
+    <StoreContext.Provider value={{
+      categories, products, heroImages, signIns, isAuthenticated, login, logout, fetchData, isLoading,
+      storeSettings, session, profile, signInWithGoogle, signOut,
+      cart, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal
+    }}>
       {children}
     </StoreContext.Provider>
   );

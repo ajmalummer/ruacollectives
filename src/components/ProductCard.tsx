@@ -3,6 +3,8 @@
 import { ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useStore } from '@/context/StoreContext';
+import { toast } from 'react-hot-toast';
 
 interface ProductCardProps {
   id: string | number;
@@ -17,6 +19,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ id, title, price, image, stock, offerEnabled, offerPrice, isAntiTarnish }: ProductCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { products, addToCart } = useStore();
 
   const isOutOfStock = stock === 0;
   const isLowStock = stock === 1;
@@ -78,7 +81,11 @@ export default function ProductCard({ id, title, price, image, stock, offerEnabl
         <button
           onClick={(e) => {
             e.preventDefault();
-            // Handle add to cart here later
+            const product = products.find(p => p.id === id);
+            if (product) {
+              addToCart(product, 1);
+              toast.success(`${title} added to cart`);
+            }
           }}
           disabled={isOutOfStock}
           className={`mt-auto w-full font-inter text-xs font-medium py-2.5 px-4 rounded-full transition-colors duration-200 flex items-center justify-center gap-2 ${
